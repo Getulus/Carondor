@@ -1,0 +1,108 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.venv
+venv/
+ENV/
+env/
+.vscode/
+
+# Flask
+instance/
+.webassets-cache
+
+# Node.js/React
+node_modules/
+npm-debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+build/
+dist/
+coverage/
+
+# Production
+/frontend/build/
+/frontend/dist/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Editor files
+.editorconfig
+.prettierrc
+
+# Testing
+*.test.js
+*.spec.js
+.coverage
+htmlcov/
+
+# IDE
+.vscode/settings.json
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Local development
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache
+.pytest_cache/
+.eslintcache
+
+# Temporary files
+*.tmp
+*.bak

@@ -1,0 +1,125 @@
+/* Game World Styles */
+.game-world {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f1621 0%, #1a2332 100%);
+  padding: 20px;
+  color: #e0e0e0;
+}
+
+.world-header {
+  background: linear-gradient(135deg, #1a2f4d 0%, #0f1621 100%);
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.world-header h1 {
+  font-size: 2em;
+  color: #ffd700;
+  margin-bottom: 10px;
+}
+
+.world-header h2 {
+  font-size: 1.3em;
+  color: #00aaff;
+  margin-bottom: 15px;
+}
+
+.world-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+@media (max-width: 768px) {
+  .world-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.hero-stats {
+  background: linear-gradient(135deg, #1a2f4d 0%, #0f1621 100%);
+  border: 2px solid #00aaff;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 0 20px rgba(0, 170, 255, 0.2);
+}
+
+.hero-stats h3 {
+  color: #00aaff;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stat {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 3px solid #ffd700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat span:first-child {
+  font-weight: bold;
+  color: #e0e0e0;
+}
+
+.stat .value {
+  font-size: 1.2em;
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.world-features {
+  background: linear-gradient(135deg, #1a2f4d 0%, #0f1621 100%);
+  border: 2px solid #ffd700;
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.world-features h3 {
+  color: #ffd700;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.features-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.feature-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 3px solid #00aaff;
+  font-size: 1.1em;
+  transition: all 0.3s ease;
+}
+
+.feature-item:hover {
+  background: rgba(0, 170, 255, 0.1);
+  transform: translateX(5px);
+}
