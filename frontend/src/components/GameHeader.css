@@ -9,8 +9,31 @@
   grid-template-columns: 250px 1fr auto auto;
   gap: 30px;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.2);
   backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.game-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    #ffd700 20%, 
+    #87ceeb 50%, 
+    #ffd700 80%, 
+    transparent 100%);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 .header-hero-section {
@@ -27,8 +50,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #87ceeb;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  border: 3px solid #87ceeb;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
+              inset 0 0 10px rgba(255, 255, 255, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+  position: relative;
+}
+
+.hero-avatar::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #87ceeb, #ffd700, #87ceeb);
+  z-index: -1;
+  animation: rotate 3s linear infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .avatar-icon {
@@ -75,10 +124,45 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(135, 206, 235, 0.05), rgba(255, 215, 0, 0.05));
+  border-radius: 8px;
+  border: 1px solid rgba(135, 206, 235, 0.2);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-resource::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.header-resource:hover::before {
+  left: 100%;
+}
+
+.header-resource:hover {
+  transform: translateY(-2px);
+  border-color: #ffd700;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
 .resource-icon-small {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
 }
 
 .resource-value {
