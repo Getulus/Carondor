@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  postgres:
+        image: postgres:16
+        restart: unless-stopped
+        environment:
+          POSTGRES_DB: carondor
+          POSTGRES_USER: carondor
+          POSTGRES_PASSWORD: carondor
+        ports:
+          - "5433:5432"
+        volumes:
+          - pgdata:/var/lib/postgresql/data
+        healthcheck:
+          test: ["CMD-SHELL", "pg_isready -U carondor -d carondor"]
+          interval: 5s
+          timeout: 5s
+          retries: 10
+volumes:
+  pgdata:

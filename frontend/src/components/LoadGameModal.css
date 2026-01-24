@@ -13,7 +13,7 @@
   max-height: 90vh;
   background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   border: 2px solid rgba(212, 175, 55, 0.4);
-  clip-path: polygon(20px 0%, calc(100% - 20px) 0%, 100% 20px, 100% calc(100% - 20px), calc(100% - 20px) 100%, 20px 100%, 0% calc(100% - 20px), 0% 20px);
+  border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(212, 175, 55, 0.4);
   padding: 24px;
   overflow: hidden;
@@ -29,7 +29,7 @@
     repeating-linear-gradient(60deg, transparent, transparent 20px, rgba(212, 175, 55, 0.02) 20px, rgba(212, 175, 55, 0.02) 40px),
     repeating-linear-gradient(-60deg, transparent, transparent 20px, rgba(212, 175, 55, 0.02) 20px, rgba(212, 175, 55, 0.02) 40px);
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.25;
 }
 
 .load-modal__header {
@@ -51,7 +51,7 @@
   width: 40px;
   height: 40px;
   background: linear-gradient(135deg, #d4af37, #ffd700);
-  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  border-radius: 10px;
   border: none;
   color: #000;
   font-weight: bold;
@@ -96,7 +96,7 @@
 .save-card {
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
   border: 2px solid rgba(212, 175, 55, 0.4);
-  clip-path: polygon(12% 0%, 88% 0%, 100% 20%, 100% 80%, 88% 100%, 12% 100%, 0% 80%, 0% 20%);
+  border-radius: 14px;
   padding: 16px;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.6);
   transition: all 0.25s ease;
@@ -125,7 +125,7 @@
   color: #d4af37;
   padding: 4px 8px;
   border: 1px solid rgba(212, 175, 55, 0.4);
-  clip-path: polygon(15% 0%, 85% 0%, 100% 50%, 85% 100%, 15% 100%, 0% 50%);
+  border-radius: 8px;
   background: rgba(212, 175, 55, 0.08);
   font-size: 0.85rem;
 }
@@ -147,7 +147,7 @@
   background: linear-gradient(135deg, #d4af37, #ffd700);
   color: #000;
   border: none;
-  clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
+  border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
