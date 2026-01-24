@@ -1,10 +1,11 @@
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { SavedGame } from '../services/gameService';
 import './GameHeader.css';
 
 interface GameHeaderProps {
   gameState: SavedGame | null;
   onRefresh?: () => void;
+  onLogout?: () => void;
 }
 
 const RESOURCE_ICONS: { [key: string]: string } = {
@@ -17,7 +18,9 @@ const RESOURCE_ICONS: { [key: string]: string } = {
   iron: '⚒️',
 };
 
-export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh }) => {
+export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh, onLogout }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   if (!gameState) return null;
 
   const totalUnits = gameState.units.reduce((sum, unit) => sum + unit.count, 0);
@@ -61,11 +64,39 @@ export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh }) => {
         </div>
       </div>
 
-      {onRefresh && (
-        <button className="refresh-btn" onClick={onRefresh} title="Refresh">
-          🔄
-        </button>
-      )}
+      <div className="header-actions">
+        {onRefresh && (
+          <button className="refresh-btn" onClick={onRefresh} title="Refresh">
+            🔄
+          </button>
+        )}
+        
+        <div className="menu-container">
+          <button 
+            className="menu-btn" 
+            onClick={() => setMenuOpen(!menuOpen)}
+            title="Menu"
+          >
+            ☰
+          </button>
+          
+          {menuOpen && (
+            <div className="menu-dropdown">
+              {onLogout && (
+                <button 
+                  className="menu-item logout-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onLogout();
+                  }}
+                >
+                  🚪 Back to Main Menu
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   );
 };

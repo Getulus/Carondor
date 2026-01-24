@@ -74,7 +74,7 @@ export interface Building {
   name: string;
   level: number;
   resource: string | null;
-  production_per_minute: number;
+  production_per_second: number;
   description: string;
   built_at: string;
   next_level_cost: Resources;
@@ -134,7 +134,7 @@ export interface BuildingType {
   description: string;
   resource: string | null;
   base_cost: Resources;
-  production_per_minute: number;
+  production_per_second: number;
 }
 
 export interface UnitType {

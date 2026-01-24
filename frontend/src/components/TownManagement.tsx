@@ -6,6 +6,7 @@ import './TownManagement.css';
 interface TownManagementProps {
   gameId: number;
   heroRace: string;
+  onLogout?: () => void;
 }
 
 const RESOURCE_ICONS: { [key: string]: string } = {
@@ -18,7 +19,7 @@ const RESOURCE_ICONS: { [key: string]: string } = {
   iron: '⚒️',
 };
 
-export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace }) => {
+export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLogout }) => {
   const [gameState, setGameState] = useState<SavedGame | null>(null);
   const [availableBuildings, setAvailableBuildings] = useState<BuildingType[]>([]);
   const [availableUnits, setAvailableUnits] = useState<UnitType[]>([]);
@@ -31,6 +32,14 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace }) =>
     loadAvailableBuildings();
     loadAvailableUnits();
   }, [gameId, heroRace]);
+
+  // Auto-refresh game state every 2 seconds to show production in real-time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadGameState();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [gameId]);
 
   const loadGameState = async () => {
     try {
@@ -94,7 +103,7 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace }) =>
 
   return (
     <div className="town-management">
-      <GameHeader gameState={gameState} onRefresh={loadGameState} />
+      <GameHeader gameState={gameState} onRefresh={loadGameState} onLogout={onLogout} />
       
       <div className="town-container">
         <div className="town-tabs">
@@ -150,7 +159,7 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace }) =>
                       <p>{building.description}</p>
                       {building.resource && (
                         <div className="building-production">
-                          Produces: {building.production_per_minute} {building.resource}/min
+                          Produces: {building.production_per_second} {building.resource}/sec
                         </div>
                       )}
                       <div className="upgrade-cost">
@@ -175,33 +184,44 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace }) =>
 
             <div className="available-buildings">
               <h3>Build New</h3>
-              <div className="buildings-grid">
-                {availableBuildings.map((buildingType) => (
-                  <div key={buildingType.type} className="building-card available">
-                    <h4>{buildingType.name}</h4>
-                    <p>{buildingType.description}</p>
-                    {buildingType.resource && (
-                      <div className="building-production">
-                        Base production: {buildingType.production_per_minute} {buildingType.resource}/min
+              {(() => {
+                const builtTypes = new Set(gameState.buildings.map(b => b.type));
+                const unbuiltBuildings = availableBuildings.filter(b => !builtTypes.has(b.type));
+                
+                if (unbuiltBuildings.length === 0) {
+                  return <p>All buildings have been constructed!</p>;
+                }
+                
+                return (
+                  <div className="buildings-grid">
+                    {unbuiltBuildings.map((buildingType) => (
+                      <div key={buildingType.type} className="building-card available">
+                        <h4>{buildingType.name}</h4>
+                        <p>{buildingType.description}</p>
+                        {buildingType.resource && (
+                          <div className="building-production">
+                            Base production: {buildingType.production_per_second} {buildingType.resource}/sec
+                          </div>
+                        )}
+                        <div className="build-cost">
+                          <strong>Cost:</strong>
+                          {Object.entries(buildingType.base_cost).map(([res, cost]) => (
+                            <span key={res} className="cost-item">
+                              {RESOURCE_ICONS[res]} {cost}
+                            </span>
+                          ))}
+                        </div>
+                        <button 
+                          onClick={() => handleBuildBuilding(buildingType.type)}
+                          className="build-btn"
+                        >
+                          Build
+                        </button>
                       </div>
-                    )}
-                    <div className="build-cost">
-                      <strong>Cost:</strong>
-                      {Object.entries(buildingType.base_cost).map(([res, cost]) => (
-                        <span key={res} className="cost-item">
-                          {RESOURCE_ICONS[res]} {cost}
-                        </span>
-                      ))}
-                    </div>
-                    <button 
-                      onClick={() => handleBuildBuilding(buildingType.type)}
-                      className="build-btn"
-                    >
-                      Build
-                    </button>
+                    ))}
                   </div>
-                ))}
-              </div>
+                );
+              })()}
             </div>
           </div>
         )}

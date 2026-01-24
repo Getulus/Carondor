@@ -25,56 +25,56 @@ BUILDINGS = {
         'name': 'Wood Mine',
         'resource': 'wood',
         'base_cost': {'gold': 100, 'stone': 50},
-        'production_per_minute': 10,  # per level
+        'production_per_second': 16,  # per level
         'description': 'Produces wood'
     },
     'farm': {
         'name': 'Farm',
         'resource': 'food',
         'base_cost': {'gold': 80, 'stone': 40},
-        'production_per_minute': 12,
+        'production_per_second': 20,
         'description': 'Produces food'
     },
     'gold_mine': {
         'name': 'Gold Mine',
         'resource': 'gold',
         'base_cost': {'gold': 300, 'stone': 200},
-        'production_per_minute': 5,
+        'production_per_second': 8,
         'description': 'Produces gold'
     },
     'crystal_mine': {
         'name': 'Crystal Mine',
         'resource': 'crystal',
         'base_cost': {'gold': 500, 'iron': 200},
-        'production_per_minute': 3,
+        'production_per_second': 5,
         'description': 'Produces crystal'
     },
     'soul_extractor': {
         'name': 'Soul Extractor',
         'resource': 'soul_energy',
         'base_cost': {'gold': 800, 'crystal': 100},
-        'production_per_minute': 2,
+        'production_per_second': 3,
         'description': 'Produces soul energy'
     },
     'stone_quarry': {
         'name': 'Stone Quarry',
         'resource': 'stone',
         'base_cost': {'gold': 60, 'wood': 30},
-        'production_per_minute': 15,
+        'production_per_second': 25,
         'description': 'Produces stone'
     },
     'iron_mine': {
         'name': 'Iron Mine',
         'resource': 'iron',
         'base_cost': {'gold': 200, 'stone': 100},
-        'production_per_minute': 8,
+        'production_per_second': 13,
         'description': 'Produces iron'
     },
     'barracks': {
         'name': 'Barracks',
         'resource': None,
         'base_cost': {'gold': 150, 'wood': 100, 'stone': 100},
-        'production_per_minute': 0,
+        'production_per_second': 0,
         'description': 'Train soldiers'
     },
 }
@@ -393,6 +393,7 @@ class Resource(db.Model):
 class Building(db.Model):
     """Town buildings"""
     __tablename__ = 'buildings'
+    __table_args__ = (db.UniqueConstraint('game_id', 'building_type', name='uq_game_building_type'),)
     
     id = db.Column(db.Integer, primary_key=True)
     game_id = db.Column(db.Integer, db.ForeignKey('saved_games.id'), nullable=False)
@@ -401,9 +402,9 @@ class Building(db.Model):
     built_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def get_production_rate(self):
-        """Get production per minute for this building at current level"""
+        """Get production per second for this building at current level"""
         building_def = BUILDINGS.get(self.building_type, {})
-        base_rate = building_def.get('production_per_minute', 0)
+        base_rate = building_def.get('production_per_second', 0)
         return base_rate * self.level
     
     def get_build_cost(self):
@@ -423,7 +424,7 @@ class Building(db.Model):
             'name': building_def.get('name', self.building_type),
             'level': self.level,
             'resource': building_def.get('resource'),
-            'production_per_minute': self.get_production_rate(),
+            'production_per_second': self.get_production_rate(),
             'description': building_def.get('description', ''),
             'built_at': self.built_at.isoformat(),
             'next_level_cost': self.get_build_cost(),

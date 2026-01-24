@@ -102,16 +102,55 @@ def list_games():
 
 @game_routes.route('/town/<int:game_id>', methods=['GET'])
 def get_town_status(game_id):
-    """Get current town status (resources, buildings, units)"""
+    """Get current town status (resources, buildings, units) with production applied"""
     try:
         game = SavedGame.query.get(game_id)
         if not game:
             return jsonify({'error': 'Game not found'}), 404
         
+        # Apply production since last update
+        apply_production(game)
+        
         return jsonify(game.to_dict()), 200
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+def apply_production(game: 'SavedGame') -> None:
+    """Apply production from buildings to resources based on elapsed time"""
+    from datetime import datetime
+    
+    # Calculate elapsed time in seconds
+    now = datetime.utcnow()
+    elapsed_seconds = (now - game.updated_at).total_seconds()
+    
+    if elapsed_seconds <= 0:
+        return
+    
+    # For each building, calculate production and add to resources
+    for building in game.buildings:
+        building_def = BUILDINGS.get(building.building_type, {})
+        resource_type = building_def.get('resource')
+        
+        if not resource_type:
+            continue
+        
+        # Calculate production: base_rate * level * elapsed_seconds
+        production_rate = building_def.get('production_per_second', 0)
+        total_production = production_rate * building.level * elapsed_seconds
+        
+        # Find or create resource
+        resource = Resource.query.filter_by(game_id=game.id, resource_type=resource_type).first()
+        if not resource:
+            resource = Resource(game_id=game.id, resource_type=resource_type, amount=0)
+            db.session.add(resource)
+        
+        resource.amount += total_production
+    
+    # Update game timestamp
+    game.updated_at = now
+    db.session.commit()
 
 
 # ==================== RESOURCE MANAGEMENT ====================
@@ -185,7 +224,7 @@ def get_production_rates(game_id):
                 production[resource] = production.get(resource, 0) + rate
         
         return jsonify({
-            'production_rates': production,  # resources per minute
+            'production_rates': production,  # resources per second
             'calculated_at': datetime.utcnow().isoformat()
         }), 200
     
@@ -222,6 +261,11 @@ def create_building(game_id):
         game = SavedGame.query.get(game_id)
         if not game:
             return jsonify({'error': 'Game not found'}), 404
+        
+        # Check if this building type already exists (only one per town)
+        existing = Building.query.filter_by(game_id=game_id, building_type=building_type).first()
+        if existing:
+            return jsonify({'error': f'Town already has a {BUILDINGS[building_type]["name"]}'}), 400
         
         # Check if player has enough resources
         building_def = BUILDINGS[building_type]

@@ -32,6 +32,40 @@ const App: FC = () => {
     error: null,
   });
 
+  // On mount, check if there's a saved game in localStorage and restore it
+  useEffect(() => {
+    const savedGameId = localStorage.getItem('currentGameId');
+    const savedHeroRace = localStorage.getItem('currentHeroRace');
+    const savedHeroName = localStorage.getItem('currentHeroName');
+    const savedHeroClass = localStorage.getItem('currentHeroClass');
+
+    if (savedGameId && savedHeroRace && savedHeroName && savedHeroClass) {
+      // Restore the current game from localStorage
+      const hero: Hero = {
+        name: savedHeroName,
+        class: savedHeroClass,
+        race: savedHeroRace,
+        level: 1,
+        experience: 0,
+        stats: {
+          health_point: 0,
+          physical_attack: 0,
+          physical_defense: 0,
+          magical_attack: 0,
+          magical_defense: 0,
+        },
+        created_at: new Date().toISOString(),
+      };
+      
+      setAppState((prev) => ({
+        ...prev,
+        currentPage: 'town',
+        gameId: parseInt(savedGameId),
+        hero: hero,
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     if (appState.currentPage === 'newGame') {
       fetchGameData();
@@ -110,6 +144,12 @@ const App: FC = () => {
         currentPage: 'town',
         loading: false,
       }));
+      
+      // Save to localStorage for refresh persistence
+      localStorage.setItem('currentGameId', saveResponse.data.game_id.toString());
+      localStorage.setItem('currentHeroRace', hero.race);
+      localStorage.setItem('currentHeroName', hero.name);
+      localStorage.setItem('currentHeroClass', hero.class);
     } catch (err) {
       setAppState((prev) => ({
         ...prev,
@@ -125,6 +165,12 @@ const App: FC = () => {
   };
 
   const handleBackToMenu = (): void => {
+    // Clear localStorage when going back to menu
+    localStorage.removeItem('currentGameId');
+    localStorage.removeItem('currentHeroRace');
+    localStorage.removeItem('currentHeroName');
+    localStorage.removeItem('currentHeroClass');
+    
     setAppState((prev) => ({
       ...prev,
       hero: null,
@@ -163,6 +209,12 @@ const App: FC = () => {
         loadModalOpen: false,
         loading: false,
       }));
+      
+      // Save to localStorage for refresh persistence
+      localStorage.setItem('currentGameId', loaded.id.toString());
+      localStorage.setItem('currentHeroRace', loaded.hero_race);
+      localStorage.setItem('currentHeroName', loaded.hero_name);
+      localStorage.setItem('currentHeroClass', loaded.hero_class);
     } catch (err) {
       setAppState((prev) => ({
         ...prev,
@@ -208,7 +260,7 @@ const App: FC = () => {
       )}
 
       {!loading && currentPage === 'town' && hero && gameId && (
-        <TownManagement gameId={gameId} heroRace={hero.race} />
+        <TownManagement gameId={gameId} heroRace={hero.race} onLogout={handleBackToMenu} />
       )}
 
       <LoadGameModal
