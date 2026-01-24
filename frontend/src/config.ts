@@ -5,4 +5,5 @@ export const endpoints = {
   classes: `${API_URL}/classes`,
   races: `${API_URL}/races`,
   createHero: `${API_URL}/hero/create`,
+  game: `${API_URL}/game`,
 } as const;

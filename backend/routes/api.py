@@ -4,8 +4,12 @@ from flask import Blueprint, jsonify, request
 from models.classes import CLASSES, ClassType
 from models.races import RACES, RaceType
 from models.hero import Hero
+from routes.game import game_routes
 
 api = Blueprint('api', __name__, url_prefix='/api')
+
+# Register game routes with /game prefix
+api.register_blueprint(game_routes, url_prefix='/game')
 
 
 @api.route('/classes', methods=['GET'])

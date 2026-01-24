@@ -3,15 +3,17 @@ import './App.css';
 import MainMenu from './components/MainMenu';
 import CharacterCreation from './components/CharacterCreation';
 import GameWorld from './components/GameWorld';
+import { TownManagement } from './components/TownManagement';
 import { gameService, GameClass, Race, Hero, HeroCreationData } from './services/gameService';
 
-type PageType = 'mainMenu' | 'newGame' | 'gameWorld';
+type PageType = 'mainMenu' | 'newGame' | 'gameWorld' | 'town';
 
 interface AppState {
   currentPage: PageType;
   classes: GameClass[];
   races: Race[];
   hero: Hero | null;
+  gameId: number | null;
   loading: boolean;
   error: string | null;
 }
@@ -22,6 +24,7 @@ const App: FC = () => {
     classes: [],
     races: [],
     hero: null,
+    gameId: null,
     loading: false,
     error: null,
   });
@@ -71,10 +74,37 @@ const App: FC = () => {
     setAppState((prev) => ({ ...prev, loading: true, error: null }));
     try {
       const response = await gameService.createHero(heroData);
+      const hero = response.data.hero;
+      
+      // Save game with initial resources and buildings
+      const saveResponse = await gameService.saveGame({
+        hero_name: hero.name,
+        hero_class: hero.class,
+        hero_race: hero.race,
+        level: hero.level,
+        experience: hero.experience,
+        resources: {
+          wood: 500,
+          food: 400,
+          gold: 300,
+          crystal: 100,
+          soul_energy: 50,
+          stone: 600,
+          iron: 200,
+        },
+        buildings: [
+          { type: 'wood_mine', level: 1 },
+          { type: 'farm', level: 1 },
+          { type: 'barracks', level: 1 },
+        ],
+        units: [],
+      });
+      
       setAppState((prev) => ({
         ...prev,
-        hero: response.data.hero,
-        currentPage: 'gameWorld',
+        hero: hero,
+        gameId: saveResponse.data.game_id,
+        currentPage: 'town',
         loading: false,
       }));
     } catch (err) {
@@ -95,11 +125,12 @@ const App: FC = () => {
     setAppState((prev) => ({
       ...prev,
       hero: null,
+      gameId: null,
       currentPage: 'mainMenu',
     }));
   };
 
-  const { currentPage, classes, races, hero, loading, error } = appState;
+  const { currentPage, classes, races, hero, gameId, loading, error } = appState;
 
   return (
     <div className="App">
@@ -131,6 +162,10 @@ const App: FC = () => {
 
       {!loading && currentPage === 'gameWorld' && hero && (
         <GameWorld hero={hero} onBack={handleBackToMenu} />
+      )}
+
+      {!loading && currentPage === 'town' && hero && gameId && (
+        <TownManagement gameId={gameId} heroRace={hero.race} />
       )}
     </div>
   );
