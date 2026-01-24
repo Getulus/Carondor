@@ -2,14 +2,14 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
-  border-bottom: 3px solid #ffd700;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  border-bottom: 3px solid #d4af37;
   padding: 15px 30px;
   display: grid;
   grid-template-columns: 250px 1fr auto auto;
   gap: 30px;
   align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 215, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.4);
   backdrop-filter: blur(10px);
   position: relative;
   overflow: hidden;
@@ -21,14 +21,36 @@
   top: 0;
   left: 0;
   right: 0;
+  bottom: 0;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(212, 175, 55, 0.03) 20px, rgba(212, 175, 55, 0.03) 40px),
+    repeating-linear-gradient(60deg, transparent, transparent 20px, rgba(212, 175, 55, 0.03) 20px, rgba(212, 175, 55, 0.03) 40px),
+    repeating-linear-gradient(-60deg, transparent, transparent 20px, rgba(212, 175, 55, 0.03) 20px, rgba(212, 175, 55, 0.03) 40px);
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+.game-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 3px;
   background: linear-gradient(90deg, 
     transparent 0%, 
-    #ffd700 20%, 
-    #87ceeb 50%, 
-    #ffd700 80%, 
+    #d4af37 20%, 
+    #ffd700 50%, 
+    #d4af37 80%, 
     transparent 100%);
   animation: shimmer 3s infinite;
+  z-index: 1;
+}
+
+.game-header > * {
+  position: relative;
+  z-index: 2;
 }
 
 @keyframes shimmer {
@@ -43,16 +65,15 @@
 }
 
 .hero-avatar {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #d4af37 0%, #ffd700 100%);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid #87ceeb;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6),
-              inset 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.8),
+              inset 0 0 15px rgba(255, 255, 255, 0.2);
   animation: pulse 2s ease-in-out infinite;
   position: relative;
 }
@@ -60,12 +81,12 @@
 .hero-avatar::before {
   content: '';
   position: absolute;
-  top: -3px;
-  left: -3px;
-  right: -3px;
-  bottom: -3px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, #87ceeb, #ffd700, #87ceeb);
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+  background: linear-gradient(45deg, #d4af37, #ffd700, #d4af37);
   z-index: -1;
   animation: rotate 3s linear infinite;
 }
@@ -102,12 +123,13 @@
 }
 
 .hero-meta span {
-  color: #87ceeb;
+  color: #d4af37;
   font-size: 0.85rem;
-  padding: 2px 8px;
-  background: rgba(135, 206, 235, 0.1);
-  border-radius: 4px;
-  border: 1px solid rgba(135, 206, 235, 0.3);
+  padding: 4px 10px;
+  background: rgba(212, 175, 55, 0.1);
+  border-radius: 0;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  clip-path: polygon(10% 0%, 90% 0%, 100% 50%, 90% 100%, 10% 100%, 0% 50%);
 }
 
 .header-resources-section {
@@ -115,8 +137,8 @@
   grid-template-columns: repeat(7, 1fr);
   gap: 12px;
   padding: 0 20px;
-  border-left: 2px solid rgba(135, 206, 235, 0.3);
-  border-right: 2px solid rgba(135, 206, 235, 0.3);
+  border-left: 2px solid rgba(212, 175, 55, 0.3);
+  border-right: 2px solid rgba(212, 175, 55, 0.3);
 }
 
 .header-resource {
@@ -124,10 +146,10 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px;
-  background: linear-gradient(135deg, rgba(135, 206, 235, 0.05), rgba(255, 215, 0, 0.05));
-  border-radius: 8px;
-  border: 1px solid rgba(135, 206, 235, 0.2);
+  padding: 8px 6px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(10, 10, 10, 0.8));
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -140,7 +162,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
   transition: left 0.5s;
 }
 
@@ -149,9 +171,9 @@
 }
 
 .header-resource:hover {
-  transform: translateY(-2px);
-  border-color: #ffd700;
-  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  transform: translateY(-2px) scale(1.05);
+  border-color: #d4af37;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
 }
 
 .resource-icon-small {
@@ -194,7 +216,7 @@
 }
 
 .stat-label {
-  color: #87ceeb;
+  color: #d4af37;
   font-size: 0.75rem;
   text-transform: uppercase;
 }
@@ -202,17 +224,19 @@
 .refresh-btn {
   width: 40px;
   height: 40px;
-  background: rgba(255, 215, 0, 0.1);
-  border: 2px solid #ffd700;
-  border-radius: 50%;
+  background: linear-gradient(135deg, #d4af37, #ffd700);
+  border: none;
+  clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
   font-size: 1.2rem;
+    color: #000000;
   cursor: pointer;
+    box-shadow: 0 4px 8px rgba(212, 175, 55, 0.4);
   transition: all 0.3s ease;
 }
 
 .refresh-btn:hover {
-  background: rgba(255, 215, 0, 0.2);
-  transform: rotate(180deg);
+  transform: rotate(180deg) scale(1.1);
+  box-shadow: 0 6px 12px rgba(212, 175, 55, 0.6);
 }
 
 /* Tablet */
@@ -248,8 +272,8 @@
   .header-resources-section {
     grid-template-columns: repeat(4, 1fr);
     border: none;
-    border-top: 2px solid rgba(135, 206, 235, 0.3);
-    border-bottom: 2px solid rgba(135, 206, 235, 0.3);
+    border-top: 2px solid rgba(212, 175, 55, 0.3);
+    border-bottom: 2px solid rgba(212, 175, 55, 0.3);
     padding: 10px 0;
   }
 

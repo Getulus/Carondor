@@ -4,6 +4,7 @@ import MainMenu from './components/MainMenu';
 import CharacterCreation from './components/CharacterCreation';
 import GameWorld from './components/GameWorld';
 import { TownManagement } from './components/TownManagement';
+import { LoadGameModal } from './components/LoadGameModal';
 import { gameService, GameClass, Race, Hero, HeroCreationData } from './services/gameService';
 
 type PageType = 'mainMenu' | 'newGame' | 'gameWorld' | 'town';
@@ -14,6 +15,7 @@ interface AppState {
   races: Race[];
   hero: Hero | null;
   gameId: number | null;
+  loadModalOpen: boolean;
   loading: boolean;
   error: string | null;
 }
@@ -25,6 +27,7 @@ const App: FC = () => {
     races: [],
     hero: null,
     gameId: null,
+    loadModalOpen: false,
     loading: false,
     error: null,
   });
@@ -63,7 +66,7 @@ const App: FC = () => {
   };
 
   const handleLoadGame = (): void => {
-    alert('Load game feature coming soon!');
+    setAppState((prev) => ({ ...prev, loadModalOpen: true }));
   };
 
   const handleQuit = (): void => {
@@ -126,11 +129,51 @@ const App: FC = () => {
       ...prev,
       hero: null,
       gameId: null,
+      loadModalOpen: false,
       currentPage: 'mainMenu',
     }));
   };
 
-  const { currentPage, classes, races, hero, gameId, loading, error } = appState;
+  const handleLoadSelected = async (gameId: number): Promise<void> => {
+    setAppState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const res = await gameService.loadGame(gameId);
+      const loaded = res.data;
+      const heroFromSave: Hero = {
+        name: loaded.hero_name,
+        class: loaded.hero_class,
+        race: loaded.hero_race,
+        level: loaded.level,
+        experience: loaded.experience,
+        stats: {
+          health_point: 0,
+          physical_attack: 0,
+          physical_defense: 0,
+          magical_attack: 0,
+          magical_defense: 0,
+        },
+        created_at: loaded.created_at,
+      };
+
+      setAppState((prev) => ({
+        ...prev,
+        hero: heroFromSave,
+        gameId: loaded.id,
+        currentPage: 'town',
+        loadModalOpen: false,
+        loading: false,
+      }));
+    } catch (err) {
+      setAppState((prev) => ({
+        ...prev,
+        error: 'Failed to load saved game. Please try again.',
+        loading: false,
+      }));
+      console.error(err);
+    }
+  };
+
+  const { currentPage, classes, races, hero, gameId, loading, error, loadModalOpen } = appState;
 
   return (
     <div className="App">
@@ -167,6 +210,12 @@ const App: FC = () => {
       {!loading && currentPage === 'town' && hero && gameId && (
         <TownManagement gameId={gameId} heroRace={hero.race} />
       )}
+
+      <LoadGameModal
+        isOpen={loadModalOpen}
+        onClose={() => setAppState((prev) => ({ ...prev, loadModalOpen: false }))}
+        onSelect={handleLoadSelected}
+      />
     </div>
   );
 };

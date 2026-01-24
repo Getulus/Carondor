@@ -126,6 +126,8 @@ export interface SaveGameResponse {
   saved_at: string;
 }
 
+export type SaveGameSummary = Omit<SavedGame, 'resources' | 'buildings' | 'units'>;
+
 export interface BuildingType {
   type: string;
   name: string;
@@ -169,7 +171,7 @@ export const gameService = {
   loadGame: (gameId: number): Promise<AxiosResponse<SavedGame>> =>
     axios.get(`${endpoints.game}/load/${gameId}`),
 
-  listGames: (): Promise<AxiosResponse<Array<Omit<SavedGame, 'resources' | 'buildings' | 'units'>>>> =>
+  listGames: (): Promise<AxiosResponse<SaveGameSummary[]>> =>
     axios.get(`${endpoints.game}/list`),
 
   // Town management
