@@ -1,6 +1,8 @@
 import React, { FC, useEffect, useState } from 'react';
 import { gameService, SavedGame, Resources, Building, Unit, BuildingType, UnitType } from '../services/gameService';
+import imageUtils from '../utils/imageUtils';
 import { GameHeader } from './GameHeader';
+import { HeroModal } from './HeroModal';
 import './TownManagement.css';
 
 interface TownManagementProps {
@@ -25,7 +27,8 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
   const [availableUnits, setAvailableUnits] = useState<UnitType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'resources' | 'buildings' | 'units'>('resources');
+  const [activeTab, setActiveTab] = useState<'buildings' | 'units'>('buildings');
+  const [showHeroModal, setShowHeroModal] = useState(false);
 
   useEffect(() => {
     loadGameState();
@@ -101,18 +104,28 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
   if (error) return <div className="town-error">{error}</div>;
   if (!gameState) return <div className="town-error">No game state</div>;
 
+  const townBackgroundStyle: React.CSSProperties = {
+    backgroundImage: `url('${imageUtils.getTownBackground(heroRace)}')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed',
+  };
+
   return (
-    <div className="town-management">
-      <GameHeader gameState={gameState} onRefresh={loadGameState} onLogout={onLogout} />
+    <div className="town-management" style={townBackgroundStyle}>
+      <div className="town-overlay"></div>
+      <GameHeader 
+        gameState={gameState} 
+        onRefresh={loadGameState} 
+        onLogout={onLogout}
+        onShowHero={() => setShowHeroModal(true)}
+      />
+      {showHeroModal && (
+        <HeroModal gameState={gameState} onClose={() => setShowHeroModal(false)} />
+      )}
       
       <div className="town-container">
-        <div className="town-tabs">
-          <button 
-            className={activeTab === 'resources' ? 'active' : ''}
-            onClick={() => setActiveTab('resources')}
-          >
-            📊 Resources
-          </button>
+        <div className="town-sidebar">
           <button 
             className={activeTab === 'buildings' ? 'active' : ''}
             onClick={() => setActiveTab('buildings')}
@@ -127,22 +140,39 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
           </button>
         </div>
 
-        <div className="town-content">{activeTab === 'resources' && (
-          <div className="resources-panel">
-            <h3>Resource Management</h3>
-            <div className="resources-grid">
-              {Object.entries(gameState.resources).map(([type, amount]) => (
-                <div key={type} className="resource-item">
-                  <span className="resource-icon">{RESOURCE_ICONS[type] || '📦'}</span>
-                  <div className="resource-info">
-                    <div className="resource-name">{type.replace('_', ' ')}</div>
-                    <div className="resource-amount">{Math.floor(amount)}</div>
+        <div className="town-content">
+          <div className="town-viewport">
+            <div className="town-center">
+              <img
+                src={imageUtils.getTownBackground(heroRace)}
+                alt={`${heroRace} town`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200'%3E%3Crect width='320' height='200' fill='%23222'/%3E%3Ctext x='160' y='100' text-anchor='middle' dy='.3em' fill='white' font-size='18'%3E${heroRace} Town%3C/text%3E%3C/svg%3E`;
+                }}
+              />
+              <div className="town-label">{heroRace} Town</div>
+            </div>
+
+            <div className="town-building-belt">
+              {gameState.buildings.length === 0 ? (
+                <div className="town-empty">No buildings yet. Build one to populate the town.</div>
+              ) : (
+                gameState.buildings.map((building) => (
+                  <div key={building.id} className="town-building-tile">
+                    <img
+                      src={imageUtils.getBuildingImage(building.type, building.level)}
+                      alt={building.name}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Crect width='96' height='96' fill='%23333'/%3E%3Ctext x='48' y='48' text-anchor='middle' dy='.3em' fill='white' font-size='10'%3E${building.name}%3C/text%3E%3C/svg%3E`;
+                      }}
+                    />
+                    <div className="tile-name">{building.name}</div>
+                    <div className="tile-level">Lv {building.level}</div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
-        )}
 
         {activeTab === 'buildings' && (
           <div className="buildings-panel">
@@ -154,6 +184,15 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
                 <div className="buildings-grid">
                   {gameState.buildings.map((building) => (
                     <div key={building.id} className="building-card">
+                      <div className="building-image">
+                        <img 
+                          src={imageUtils.getBuildingImage(building.type, building.level)}
+                          alt={building.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23555'/%3E%3Ctext x='75' y='75' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E${building.name}%3C/text%3E%3C/svg%3E`;
+                          }}
+                        />
+                      </div>
                       <h4>{building.name}</h4>
                       <div className="building-level">Level {building.level}</div>
                       <p>{building.description}</p>
@@ -196,6 +235,15 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
                   <div className="buildings-grid">
                     {unbuiltBuildings.map((buildingType) => (
                       <div key={buildingType.type} className="building-card available">
+                        <div className="building-image">
+                          <img 
+                            src={imageUtils.getBuildingImage(buildingType.type, 1)}
+                            alt={buildingType.name}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23555'/%3E%3Ctext x='75' y='75' text-anchor='middle' dy='.3em' fill='white' font-size='14'%3E${buildingType.name}%3C/text%3E%3C/svg%3E`;
+                            }}
+                          />
+                        </div>
                         <h4>{buildingType.name}</h4>
                         <p>{buildingType.description}</p>
                         {buildingType.resource && (
@@ -236,6 +284,15 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
                 <div className="units-grid">
                   {gameState.units.map((unit) => (
                     <div key={unit.id} className="unit-card">
+                      <div className="unit-image">
+                        <img 
+                          src={imageUtils.getUnitImage(unit.type)}
+                          alt={unit.name}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%23444'/%3E%3Ctext x='60' y='60' text-anchor='middle' dy='.3em' fill='white' font-size='12'%3E${unit.name}%3C/text%3E%3C/svg%3E`;
+                          }}
+                        />
+                      </div>
                       <h4>{unit.name}</h4>
                       <div className="unit-count">Count: {unit.count}</div>
                       <div className="unit-stats">
@@ -255,6 +312,15 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
               <div className="units-grid">
                 {availableUnits.map((unitType) => (
                   <div key={unitType.type} className="unit-card available">
+                    <div className="unit-image">
+                      <img 
+                        src={imageUtils.getUnitImage(unitType.type)}
+                        alt={unitType.name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Crect width='120' height='120' fill='%23444'/%3E%3Ctext x='60' y='60' text-anchor='middle' dy='.3em' fill='white' font-size='12'%3E${unitType.name}%3C/text%3E%3C/svg%3E`;
+                        }}
+                      />
+                    </div>
                     <h4>{unitType.name}</h4>
                     <div className="unit-stats">
                       <span>⚔️ {unitType.attack}</span>

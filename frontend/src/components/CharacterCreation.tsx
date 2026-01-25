@@ -1,5 +1,6 @@
 import React, { useState, useEffect, FC } from 'react';
 import { GameClass, Race, HeroCreationData } from '../services/gameService';
+import imageUtils from '../utils/imageUtils';
 import '../styles/CharacterCreation.css';
 
 interface CharacterCreationProps {
@@ -92,6 +93,15 @@ const CharacterCreation: FC<CharacterCreationProps> = ({
                   className={`option-card ${selectedClass === cls.name ? 'selected' : ''}`}
                   onClick={() => setSelectedClass(cls.name)}
                 >
+                  <div className="option-image">
+                    <img 
+                      src={imageUtils.getHeroPlaceholder(cls.name)}
+                      alt={cls.name}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23333'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='12'%3E${cls.name}%3C/text%3E%3C/svg%3E`;
+                      }}
+                    />
+                  </div>
                   <h3>{cls.name}</h3>
                   <p className="description">{cls.description}</p>
                   <div className="stats">
@@ -123,6 +133,15 @@ const CharacterCreation: FC<CharacterCreationProps> = ({
                   className={`option-card ${selectedRace === race.name ? 'selected' : ''}`}
                   onClick={() => setSelectedRace(race.name)}
                 >
+                  <div className="option-image">
+                    <img 
+                      src={imageUtils.getRaceImage(race.name)}
+                      alt={race.name}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23333'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='12'%3E${race.name}%3C/text%3E%3C/svg%3E`;
+                      }}
+                    />
+                  </div>
                   <h3>{race.name}</h3>
                   <p className="description">{race.description}</p>
                   <div className="bonuses">

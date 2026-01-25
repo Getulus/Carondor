@@ -6,6 +6,7 @@ interface GameHeaderProps {
   gameState: SavedGame | null;
   onRefresh?: () => void;
   onLogout?: () => void;
+  onShowHero?: () => void;
 }
 
 const RESOURCE_ICONS: { [key: string]: string } = {
@@ -18,13 +19,10 @@ const RESOURCE_ICONS: { [key: string]: string } = {
   iron: '⚒️',
 };
 
-export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh, onLogout }) => {
+export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh, onLogout, onShowHero }) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!gameState) return null;
-
-  const totalUnits = gameState.units.reduce((sum, unit) => sum + unit.count, 0);
-  const totalBuildings = gameState.buildings.length;
 
   return (
     <header className="game-header">
@@ -40,6 +38,13 @@ export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh, onLogout
             <span className="hero-level">Level {gameState.level}</span>
           </div>
         </div>
+        <button
+          className="hero-btn"
+          title="View Hero"
+          onClick={() => (onShowHero ? onShowHero() : alert('Hero details coming soon'))}
+        >
+          🧙 Hero
+        </button>
       </div>
 
       <div className="header-resources-section">
@@ -51,26 +56,7 @@ export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh, onLogout
         ))}
       </div>
 
-      <div className="header-stats-section">
-        <div className="stat-item">
-          <span className="stat-icon">🏗️</span>
-          <span className="stat-value">{totalBuildings}</span>
-          <span className="stat-label">Buildings</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-icon">⚔️</span>
-          <span className="stat-value">{totalUnits}</span>
-          <span className="stat-label">Army</span>
-        </div>
-      </div>
-
       <div className="header-actions">
-        {onRefresh && (
-          <button className="refresh-btn" onClick={onRefresh} title="Refresh">
-            🔄
-          </button>
-        )}
-        
         <div className="menu-container">
           <button 
             className="menu-btn" 
@@ -82,6 +68,17 @@ export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh, onLogout
           
           {menuOpen && (
             <div className="menu-dropdown">
+              {onRefresh && (
+                <button 
+                  className="menu-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onRefresh();
+                  }}
+                >
+                  🔄 Refresh
+                </button>
+              )}
               {onLogout && (
                 <button 
                   className="menu-item logout-item"
