@@ -77,6 +77,69 @@ BUILDINGS = {
         'production_per_second': 0,
         'description': 'Train soldiers'
     },
+    'academy': {
+        'name': 'Academy',
+        'resource': None,
+        'base_cost': {'gold': 1000, 'crystal': 200, 'stone': 300},
+        'production_per_second': 0,
+        'description': 'Research talents to improve economy and units',
+        'special': 'talent_points'
+    },
+    # Race-Specific Special Buildings
+    'human_cathedral': {
+        'name': 'Grand Cathedral',
+        'resource': None,
+        'base_cost': {'gold': 1500, 'stone': 500, 'crystal': 150},
+        'production_per_second': 0,
+        'description': 'Human special building - Grants +20% gold production and +10% unit defense',
+        'race': 'Human',
+        'bonus': {'gold_multiplier': 1.2, 'unit_defense': 10}
+    },
+    'elf_world_tree': {
+        'name': 'Ancient World Tree',
+        'resource': None,
+        'base_cost': {'gold': 1500, 'wood': 800, 'crystal': 200},
+        'production_per_second': 0,
+        'description': 'Elf special building - Grants +25% wood production and +15% unit magical attack',
+        'race': 'Elf',
+        'bonus': {'wood_multiplier': 1.25, 'unit_magical_attack': 15}
+    },
+    'dwarf_forge': {
+        'name': 'Legendary Forge',
+        'resource': None,
+        'base_cost': {'gold': 1500, 'iron': 600, 'stone': 400},
+        'production_per_second': 0,
+        'description': 'Dwarf special building - Grants +30% iron production and +20% unit physical attack',
+        'race': 'Dwarf',
+        'bonus': {'iron_multiplier': 1.3, 'unit_physical_attack': 20}
+    },
+    'orc_warcamp': {
+        'name': 'Great War Camp',
+        'resource': None,
+        'base_cost': {'gold': 1500, 'food': 700, 'iron': 300},
+        'production_per_second': 0,
+        'description': 'Orc special building - Grants +20% food production and +25 unit HP',
+        'race': 'Orc',
+        'bonus': {'food_multiplier': 1.2, 'unit_hp': 25}
+    },
+    'undead_necropolis': {
+        'name': 'Dark Necropolis',
+        'resource': None,
+        'base_cost': {'gold': 1500, 'soul_energy': 500, 'crystal': 250},
+        'production_per_second': 0,
+        'description': 'Undead special building - Grants +50% soul energy production and units cost -20% resources',
+        'race': 'Undead',
+        'bonus': {'soul_energy_multiplier': 1.5, 'unit_cost_reduction': 0.2}
+    },
+    'dragonborn_sanctuary': {
+        'name': 'Dragon Sanctuary',
+        'resource': None,
+        'base_cost': {'gold': 2000, 'crystal': 400, 'iron': 400},
+        'production_per_second': 0,
+        'description': 'Dragonborn special building - Grants +35% crystal production and +15% all unit stats',
+        'race': 'Dragonborn',
+        'bonus': {'crystal_multiplier': 1.35, 'unit_all_stats': 15}
+    },
 }
 
 # ==================== UNIT DEFINITIONS ====================
@@ -356,6 +419,8 @@ class SavedGame(db.Model):
     resources = db.relationship('Resource', backref='game', lazy=True, cascade='all, delete-orphan')
     buildings = db.relationship('Building', backref='game', lazy=True, cascade='all, delete-orphan')
     units = db.relationship('Unit', backref='game', lazy=True, cascade='all, delete-orphan')
+    map_tiles = db.relationship('MapTile', backref='game', lazy=True, cascade='all, delete-orphan')
+    talents = db.relationship('Talent', backref='game', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -370,6 +435,7 @@ class SavedGame(db.Model):
             'resources': {r.resource_type: r.amount for r in self.resources},
             'buildings': [b.to_dict() for b in self.buildings],
             'units': [u.to_dict() for u in self.units],
+            'talents': [t.to_dict() for t in self.talents],
         }
 
 
@@ -469,3 +535,186 @@ class Unit(db.Model):
             'total_cost': {k: v * self.count for k, v in self.get_hire_cost().items()},
             'hired_at': self.hired_at.isoformat(),
         }
+
+
+class MapTile(db.Model):
+    """World map hexagonal tiles"""
+    __tablename__ = 'map_tiles'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('saved_games.id'), nullable=False)
+    q = db.Column(db.Integer, nullable=False)  # Axial coordinate Q
+    r = db.Column(db.Integer, nullable=False)  # Axial coordinate R
+    terrain_type = db.Column(db.String(50), nullable=False)
+    occupied_by = db.Column(db.String(50), nullable=True)  # 'player', 'enemy', or None
+    explored = db.Column(db.Boolean, default=False)
+    
+    __table_args__ = (db.UniqueConstraint('game_id', 'q', 'r', name='uq_game_tile_coords'),)
+    
+    def to_dict(self):
+        from models.world_map import TERRAIN_TRAITS
+        
+        traits = TERRAIN_TRAITS.get(self.terrain_type, {})
+        resource_bonuses = {}
+        
+        for key, value in traits.items():
+            if key.endswith('_bonus') and key != 'defense_bonus':
+                resource_name = key.replace('_bonus', '')
+                resource_bonuses[resource_name] = value
+        
+        return {
+            'id': self.id,
+            'q': self.q,
+            'r': self.r,
+            'terrain_type': self.terrain_type,
+            'terrain_name': traits.get('name', self.terrain_type),
+            'color': traits.get('color', '#CCCCCC'),
+            'defense_bonus': traits.get('defense_bonus', 0),
+            'movement_cost': traits.get('movement_cost', 1),
+            'resource_bonuses': resource_bonuses,
+            'description': traits.get('description', ''),
+            'occupied_by': self.occupied_by,
+            'explored': self.explored,
+        }
+
+
+# ==================== TALENT SYSTEM ====================
+
+TALENT_TREE = {
+    # Economy Talents
+    'efficient_mining': {
+        'name': 'Efficient Mining',
+        'category': 'economy',
+        'max_level': 5,
+        'cost_per_level': 1,
+        'description': 'Increases all resource production by 5% per level',
+        'bonus': {'resource_multiplier': 0.05}
+    },
+    'wealthy_empire': {
+        'name': 'Wealthy Empire',
+        'category': 'economy',
+        'max_level': 3,
+        'cost_per_level': 2,
+        'description': 'Increases gold production by 15% per level',
+        'bonus': {'gold_multiplier': 0.15}
+    },
+    'crystal_mastery': {
+        'name': 'Crystal Mastery',
+        'category': 'economy',
+        'max_level': 3,
+        'cost_per_level': 2,
+        'description': 'Increases crystal production by 20% per level',
+        'bonus': {'crystal_multiplier': 0.2}
+    },
+    'abundant_harvest': {
+        'name': 'Abundant Harvest',
+        'category': 'economy',
+        'max_level': 5,
+        'cost_per_level': 1,
+        'description': 'Increases food production by 10% per level',
+        'bonus': {'food_multiplier': 0.1}
+    },
+    'forestry_expertise': {
+        'name': 'Forestry Expertise',
+        'category': 'economy',
+        'max_level': 5,
+        'cost_per_level': 1,
+        'description': 'Increases wood production by 10% per level',
+        'bonus': {'wood_multiplier': 0.1}
+    },
+    # Combat Talents
+    'warrior_training': {
+        'name': 'Warrior Training',
+        'category': 'military',
+        'max_level': 5,
+        'cost_per_level': 1,
+        'description': 'Increases all unit attack by 5% per level',
+        'bonus': {'unit_attack_multiplier': 0.05}
+    },
+    'fortification': {
+        'name': 'Fortification',
+        'category': 'military',
+        'max_level': 5,
+        'cost_per_level': 1,
+        'description': 'Increases all unit defense by 5% per level',
+        'bonus': {'unit_defense_multiplier': 0.05}
+    },
+    'vitality': {
+        'name': 'Vitality',
+        'category': 'military',
+        'max_level': 5,
+        'cost_per_level': 1,
+        'description': 'Increases all unit HP by 10 per level',
+        'bonus': {'unit_hp_bonus': 10}
+    },
+    'reduced_upkeep': {
+        'name': 'Reduced Upkeep',
+        'category': 'military',
+        'max_level': 3,
+        'cost_per_level': 2,
+        'description': 'Reduces unit recruitment cost by 10% per level',
+        'bonus': {'unit_cost_reduction': 0.1}
+    },
+    'rapid_recruitment': {
+        'name': 'Rapid Recruitment',
+        'category': 'military',
+        'max_level': 3,
+        'cost_per_level': 2,
+        'description': 'Can recruit 2 additional units per click per level',
+        'bonus': {'recruitment_speed': 2}
+    },
+    # Special Talents
+    'arcane_knowledge': {
+        'name': 'Arcane Knowledge',
+        'category': 'special',
+        'max_level': 1,
+        'cost_per_level': 5,
+        'description': 'Unlocks advanced magical abilities',
+        'bonus': {'magical_power': 50}
+    },
+    'legendary_hero': {
+        'name': 'Legendary Hero',
+        'category': 'special',
+        'max_level': 1,
+        'cost_per_level': 5,
+        'description': 'Your hero gains +50% to all stats',
+        'bonus': {'hero_stats_multiplier': 0.5}
+    },
+}
+
+
+class Talent(db.Model):
+    """Talent points invested in the Academy"""
+    __tablename__ = 'talents'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('saved_games.id'), nullable=False)
+    talent_id = db.Column(db.String(50), nullable=False)  # Key from TALENT_TREE
+    level = db.Column(db.Integer, default=0)
+    
+    __table_args__ = (db.UniqueConstraint('game_id', 'talent_id', name='uq_game_talent'),)
+    
+    def get_talent_info(self):
+        """Get talent definition"""
+        return TALENT_TREE.get(self.talent_id, {})
+    
+    def get_current_bonus(self):
+        """Calculate current bonus based on level"""
+        talent_info = self.get_talent_info()
+        bonus = talent_info.get('bonus', {})
+        return {key: value * self.level for key, value in bonus.items()}
+    
+    def to_dict(self):
+        talent_info = self.get_talent_info()
+        return {
+            'id': self.id,
+            'talent_id': self.talent_id,
+            'name': talent_info.get('name', self.talent_id),
+            'category': talent_info.get('category', 'unknown'),
+            'level': self.level,
+            'max_level': talent_info.get('max_level', 1),
+            'cost_per_level': talent_info.get('cost_per_level', 1),
+            'description': talent_info.get('description', ''),
+            'current_bonus': self.get_current_bonus(),
+        }
+

@@ -1,7 +1,8 @@
 """Game management endpoints (save, load, town status)"""
 
 from flask import Blueprint, request, jsonify
-from models.db import db, SavedGame, Resource, Building, Unit, RESOURCES, BUILDINGS, UNITS
+from models.db import db, SavedGame, Resource, Building, Unit, MapTile, RESOURCES, BUILDINGS, UNITS
+from models.world_map import WorldMap
 from datetime import datetime, timedelta
 
 game_routes = Blueprint('game', __name__)
@@ -53,6 +54,21 @@ def save_game():
         
         db.session.add(game)
         db.session.commit()
+        
+        # Auto-generate world map for new game if it doesn't exist
+        existing_tiles = MapTile.query.filter_by(game_id=game.id).first()
+        if not existing_tiles:
+            world_map = WorldMap(radius=10)
+            for tile in world_map.tiles.values():
+                map_tile = MapTile(
+                    game_id=game.id,
+                    q=tile.q,
+                    r=tile.r,
+                    terrain_type=tile.terrain_type,
+                    explored=False
+                )
+                db.session.add(map_tile)
+            db.session.commit()
         
         return jsonify({
             'message': 'Game saved successfully',

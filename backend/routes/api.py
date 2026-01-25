@@ -5,11 +5,19 @@ from models.classes import CLASSES, ClassType
 from models.races import RACES, RaceType
 from models.hero import Hero
 from routes.game import game_routes
+from routes.map import map_routes
+from routes.academy import academy_routes
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
 # Register game routes with /game prefix
 api.register_blueprint(game_routes, url_prefix='/game')
+
+# Register map routes with /map prefix
+api.register_blueprint(map_routes, url_prefix='/map')
+
+# Register academy routes with /academy prefix
+api.register_blueprint(academy_routes, url_prefix='/academy')
 
 
 @api.route('/classes', methods=['GET'])

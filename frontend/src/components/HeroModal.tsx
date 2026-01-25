@@ -31,7 +31,8 @@ export const HeroModal: FC<HeroModalProps> = ({ gameState, onClose }) => {
               src={imageUtils.getHeroImage(gameState.hero_name, gameState.hero_class)}
               alt={gameState.hero_name}
               onError={(e) => {
-                (e.target as HTMLImageElement).src = imageUtils.getHeroPlaceholder(gameState.hero_class);
+                const target = e.target as HTMLImageElement;
+                target.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400'%3E%3Crect width='300' height='400' fill='%23333'/%3E%3Ctext x='150' y='180' text-anchor='middle' fill='%23d4af37' font-size='28' font-weight='bold'%3E${encodeURIComponent(gameState.hero_name)}%3C/text%3E%3Ctext x='150' y='220' text-anchor='middle' fill='%23888' font-size='18'%3E${encodeURIComponent(gameState.hero_class)}%3C/text%3E%3Ctext x='150' y='245' text-anchor='middle' fill='%23888' font-size='18'%3ELevel ${gameState.level}%3C/text%3E%3C/svg%3E`;
               }}
             />
           </div>

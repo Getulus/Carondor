@@ -3,6 +3,8 @@ import { gameService, SavedGame, Resources, Building, Unit, BuildingType, UnitTy
 import imageUtils from '../utils/imageUtils';
 import { GameHeader } from './GameHeader';
 import { HeroModal } from './HeroModal';
+import WorldMap from './WorldMap';
+import Academy from './Academy';
 import './TownManagement.css';
 
 interface TownManagementProps {
@@ -27,7 +29,7 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
   const [availableUnits, setAvailableUnits] = useState<UnitType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'buildings' | 'units'>('buildings');
+  const [activeTab, setActiveTab] = useState<'buildings' | 'units' | 'worldmap'>('buildings');
   const [showHeroModal, setShowHeroModal] = useState(false);
 
   useEffect(() => {
@@ -137,6 +139,18 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
             onClick={() => setActiveTab('units')}
           >
             ⚔️ Army
+          </button>
+          <button 
+            className={activeTab === 'worldmap' ? 'active' : ''}
+            onClick={() => setActiveTab('worldmap')}
+          >
+            🗺️ World Map
+          </button>
+          <button 
+            className={activeTab === 'academy' ? 'active' : ''}
+            onClick={() => setActiveTab('academy')}
+          >
+            🎓 Academy
           </button>
         </div>
 
@@ -352,6 +366,18 @@ export const TownManagement: FC<TownManagementProps> = ({ gameId, heroRace, onLo
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'worldmap' && (
+          <div className="worldmap-panel">
+            <WorldMap gameId={gameId} />
+          </div>
+        )}
+
+        {activeTab === 'academy' && (
+          <div className="academy-panel">
+            <Academy gameId={gameId} />
           </div>
         )}
       </div>

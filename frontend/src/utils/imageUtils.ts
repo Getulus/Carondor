@@ -7,7 +7,8 @@ const IMAGE_BASE_PATH = '/images';
 export const imageUtils = {
   // Hero images
   getHeroImage: (heroName: string, className: string): string => {
-    return `${IMAGE_BASE_PATH}/heroes/${className.toLowerCase()}_${heroName.toLowerCase().replace(/\s+/g, '_')}.png`;
+    // Try simple hero name first (e.g., shadowhunter.png)
+    return `${IMAGE_BASE_PATH}/heroes/${className.toLowerCase().replace(/\s+/g, '_')}.png`;
   },
   
   getHeroPlaceholder: (className: string): string => {
