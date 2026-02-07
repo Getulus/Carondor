@@ -37,6 +37,17 @@ export const GameHeader: FC<GameHeaderProps> = ({ gameState, onRefresh, onLogout
             <span className="hero-race">{gameState.hero_race}</span>
             <span className="hero-level">Level {gameState.level}</span>
           </div>
+          {gameState.xp_needed && (
+            <div className="xp-bar-container">
+              <div className="xp-bar">
+                <div 
+                  className="xp-bar-fill"
+                  style={{width: `${gameState.xp_progress || 0}%`}}
+                ></div>
+              </div>
+              <span className="xp-text">{gameState.experience} / {gameState.xp_needed} XP</span>
+            </div>
+          )}
         </div>
         <button
           className="hero-btn"

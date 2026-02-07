@@ -1,0 +1,327 @@
+.inventory-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in;
+}
+
+.inventory-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid #0f3460;
+  border-radius: 12px;
+  width: 95%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 2px solid #0f3460;
+  background: rgba(15, 52, 96, 0.3);
+}
+
+.inventory-header h2 {
+  margin: 0;
+  color: #e94560;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #e94560;
+  font-size: 32px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.close-button:hover {
+  transform: scale(1.2);
+}
+
+.inventory-content {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 350px;
+  gap: 20px;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #b0b0b0;
+  font-size: 1.2rem;
+}
+
+.equipment-section h3,
+.inventory-section h3 {
+  color: #ffc107;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #0f3460;
+}
+
+.equipment-slots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.equipment-slot {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #0f3460;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.slot-label {
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.empty-slot {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  border: 2px dashed #333;
+  border-radius: 6px;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.item-card {
+  background: rgba(20, 20, 30, 0.9);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid;
+  position: relative;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.item-card.rarity-common {
+  border-color: #9e9e9e;
+}
+
+.item-card.rarity-uncommon {
+  border-color: #4caf50;
+}
+
+.item-card.rarity-rare {
+  border-color: #2196f3;
+}
+
+.item-card.rarity-epic {
+  border-color: #9c27b0;
+}
+
+.item-card.rarity-legendary {
+  border-color: #ff9800;
+  box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+}
+
+.item-name {
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.item-type {
+  font-size: 0.8rem;
+  color: #b0b0b0;
+  margin-bottom: 6px;
+}
+
+.item-rarity {
+  font-size: 0.75rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.rarity-common .item-rarity {
+  color: #9e9e9e;
+}
+
+.rarity-uncommon .item-rarity {
+  color: #4caf50;
+}
+
+.rarity-rare .item-rarity {
+  color: #2196f3;
+}
+
+.rarity-epic .item-rarity {
+  color: #9c27b0;
+}
+
+.rarity-legendary .item-rarity {
+  color: #ff9800;
+}
+
+.equip-btn,
+.unequip-btn {
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+}
+
+.equip-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.equip-btn:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
+
+.unequip-btn {
+  background: #e94560;
+  color: white;
+}
+
+.unequip-btn:hover {
+  background: #d63851;
+  transform: scale(1.05);
+}
+
+.empty-inventory {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+.item-details {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid #0f3460;
+  border-radius: 8px;
+  padding: 20px;
+  position: sticky;
+  top: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.item-details h3 {
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.detail-rarity {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.detail-rarity.rarity-common { color: #9e9e9e; }
+.detail-rarity.rarity-uncommon { color: #4caf50; }
+.detail-rarity.rarity-rare { color: #2196f3; }
+.detail-rarity.rarity-epic { color: #9c27b0; }
+.detail-rarity.rarity-legendary { color: #ff9800; }
+
+.detail-type {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+.detail-stats {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.detail-stats h4 {
+  color: #ffc107;
+  margin: 0 0 10px 0;
+  font-size: 0.95rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+  font-size: 0.9rem;
+}
+
+.stat-name {
+  color: #b0b0b0;
+  text-transform: capitalize;
+}
+
+.stat-value {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.detail-description {
+  font-size: 0.9rem;
+  color: #888;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .inventory-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .item-details {
+    position: static;
+  }
+}

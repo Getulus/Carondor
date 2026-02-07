@@ -412,6 +412,24 @@ class SavedGame(db.Model):
     level = db.Column(db.Integer, default=1)
     experience = db.Column(db.Integer, default=0)
     
+    def get_xp_needed_for_next_level(self):
+        """Calculate XP needed to reach next level"""
+        # Formula: 100 * level^1.5
+        return int(100 * (self.level ** 1.5))
+    
+    def add_experience(self, xp_gained):
+        """Add experience and handle level-ups"""
+        self.experience += xp_gained
+        levels_gained = 0
+        
+        # Check for level-ups
+        while self.experience >= self.get_xp_needed_for_next_level():
+            self.experience -= self.get_xp_needed_for_next_level()
+            self.level += 1
+            levels_gained += 1
+        
+        return levels_gained
+    
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -421,6 +439,7 @@ class SavedGame(db.Model):
     units = db.relationship('Unit', backref='game', lazy=True, cascade='all, delete-orphan')
     map_tiles = db.relationship('MapTile', backref='game', lazy=True, cascade='all, delete-orphan')
     talents = db.relationship('Talent', backref='game', lazy=True, cascade='all, delete-orphan')
+    items = db.relationship('Item', backref='game', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -430,12 +449,15 @@ class SavedGame(db.Model):
             'hero_race': self.hero_race,
             'level': self.level,
             'experience': self.experience,
+            'xp_needed': self.get_xp_needed_for_next_level(),
+            'xp_progress': round((self.experience / self.get_xp_needed_for_next_level()) * 100, 1),
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'resources': {r.resource_type: r.amount for r in self.resources},
             'buildings': [b.to_dict() for b in self.buildings],
             'units': [u.to_dict() for u in self.units],
             'talents': [t.to_dict() for t in self.talents],
+            'items': [i.to_dict() for i in self.items],
         }
 
 
@@ -546,13 +568,15 @@ class MapTile(db.Model):
     q = db.Column(db.Integer, nullable=False)  # Axial coordinate Q
     r = db.Column(db.Integer, nullable=False)  # Axial coordinate R
     terrain_type = db.Column(db.String(50), nullable=False)
-    occupied_by = db.Column(db.String(50), nullable=True)  # 'player', 'enemy', or None
+    occupied_by = db.Column(db.String(50), nullable=True)  # 'player', 'neutral', or None
     explored = db.Column(db.Boolean, default=False)
+    enemy_type = db.Column(db.String(50), nullable=True)  # Type of enemy on neutral tiles
+    enemy_strength = db.Column(db.Integer, default=0)  # Enemy power level
     
     __table_args__ = (db.UniqueConstraint('game_id', 'q', 'r', name='uq_game_tile_coords'),)
     
     def to_dict(self):
-        from models.world_map import TERRAIN_TRAITS
+        from models.world_map import TERRAIN_TRAITS, ENEMY_TYPES
         
         traits = TERRAIN_TRAITS.get(self.terrain_type, {})
         resource_bonuses = {}
@@ -561,6 +585,17 @@ class MapTile(db.Model):
             if key.endswith('_bonus') and key != 'defense_bonus':
                 resource_name = key.replace('_bonus', '')
                 resource_bonuses[resource_name] = value
+        
+        enemy_data = None
+        if self.enemy_type and self.enemy_type in ENEMY_TYPES:
+            enemy_info = ENEMY_TYPES[self.enemy_type]
+            enemy_data = {
+                'type': self.enemy_type,
+                'name': enemy_info['name'],
+                'strength': self.enemy_strength,
+                'description': enemy_info['description'],
+                'power': enemy_info['base_power'] + (self.enemy_strength * enemy_info['power_per_level'])
+            }
         
         return {
             'id': self.id,
@@ -575,6 +610,7 @@ class MapTile(db.Model):
             'description': traits.get('description', ''),
             'occupied_by': self.occupied_by,
             'explored': self.explored,
+            'enemy': enemy_data,
         }
 
 
@@ -718,3 +754,158 @@ class Talent(db.Model):
             'current_bonus': self.get_current_bonus(),
         }
 
+
+# ==================== ITEM SYSTEM ====================
+
+ITEM_TYPES = {
+    'weapon': 'Weapon',
+    'armor': 'Armor',
+    'helmet': 'Helmet',
+    'boots': 'Boots',
+    'amulet': 'Amulet',
+    'ring': 'Ring',
+}
+
+ITEM_RARITIES = {
+    'common': {'name': 'Common', 'color': '#9e9e9e', 'stat_multiplier': 1.0},
+    'uncommon': {'name': 'Uncommon', 'color': '#4caf50', 'stat_multiplier': 1.5},
+    'rare': {'name': 'Rare', 'color': '#2196f3', 'stat_multiplier': 2.0},
+    'epic': {'name': 'Epic', 'color': '#9c27b0', 'stat_multiplier': 2.5},
+    'legendary': {'name': 'Legendary', 'color': '#ff9800', 'stat_multiplier': 3.0},
+}
+
+ITEM_TEMPLATES = {
+    # Weapons
+    'iron_sword': {
+        'name': 'Iron Sword',
+        'type': 'weapon',
+        'base_stats': {'attack': 10, 'physical_attack': 5},
+        'description': 'A sturdy iron blade'
+    },
+    'steel_sword': {
+        'name': 'Steel Sword',
+        'type': 'weapon',
+        'base_stats': {'attack': 15, 'physical_attack': 8},
+        'description': 'A well-crafted steel weapon'
+    },
+    'magic_staff': {
+        'name': 'Magic Staff',
+        'type': 'weapon',
+        'base_stats': {'magical_attack': 12, 'attack': 5},
+        'description': 'A staff imbued with magical power'
+    },
+    # Armor
+    'leather_armor': {
+        'name': 'Leather Armor',
+        'type': 'armor',
+        'base_stats': {'defense': 8, 'physical_defense': 5},
+        'description': 'Light but protective leather armor'
+    },
+    'chainmail': {
+        'name': 'Chainmail',
+        'type': 'armor',
+        'base_stats': {'defense': 15, 'physical_defense': 10},
+        'description': 'Heavy chainmail protection'
+    },
+    'plate_armor': {
+        'name': 'Plate Armor',
+        'type': 'armor',
+        'base_stats': {'defense': 25, 'physical_defense': 15, 'hp': 50},
+        'description': 'Thick plate armor for maximum protection'
+    },
+    # Helmets
+    'iron_helmet': {
+        'name': 'Iron Helmet',
+        'type': 'helmet',
+        'base_stats': {'defense': 5, 'hp': 20},
+        'description': 'Protects your head from harm'
+    },
+    'war_helm': {
+        'name': 'War Helm',
+        'type': 'helmet',
+        'base_stats': {'defense': 10, 'physical_defense': 5, 'hp': 30},
+        'description': 'A battle-hardened helm'
+    },
+    # Boots
+    'leather_boots': {
+        'name': 'Leather Boots',
+        'type': 'boots',
+        'base_stats': {'defense': 3, 'hp': 15},
+        'description': 'Comfortable leather boots'
+    },
+    'steel_boots': {
+        'name': 'Steel Boots',
+        'type': 'boots',
+        'base_stats': {'defense': 8, 'physical_defense': 5, 'hp': 25},
+        'description': 'Heavy steel-reinforced boots'
+    },
+    # Amulets
+    'health_amulet': {
+        'name': 'Amulet of Vitality',
+        'type': 'amulet',
+        'base_stats': {'hp': 100},
+        'description': 'Increases maximum health'
+    },
+    'power_amulet': {
+        'name': 'Amulet of Power',
+        'type': 'amulet',
+        'base_stats': {'attack': 15, 'magical_attack': 10},
+        'description': 'Boosts offensive capabilities'
+    },
+    # Rings
+    'ring_of_strength': {
+        'name': 'Ring of Strength',
+        'type': 'ring',
+        'base_stats': {'physical_attack': 10, 'attack': 5},
+        'description': 'Enhances physical prowess'
+    },
+    'ring_of_magic': {
+        'name': 'Ring of Magic',
+        'type': 'ring',
+        'base_stats': {'magical_attack': 12, 'magical_defense': 5},
+        'description': 'Amplifies magical abilities'
+    },
+}
+
+
+class Item(db.Model):
+    """Hero inventory items"""
+    __tablename__ = 'items'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    game_id = db.Column(db.Integer, db.ForeignKey('saved_games.id'), nullable=False)
+    item_template = db.Column(db.String(50), nullable=False)  # Key from ITEM_TEMPLATES
+    rarity = db.Column(db.String(20), default='common')  # common, uncommon, rare, epic, legendary
+    equipped = db.Column(db.Boolean, default=False)
+    acquired_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    def get_template(self):
+        """Get item template"""
+        return ITEM_TEMPLATES.get(self.item_template, {})
+    
+    def get_stats(self):
+        """Get item stats with rarity multiplier applied"""
+        template = self.get_template()
+        base_stats = template.get('base_stats', {})
+        multiplier = ITEM_RARITIES.get(self.rarity, {}).get('stat_multiplier', 1.0)
+        
+        return {key: int(value * multiplier) for key, value in base_stats.items()}
+    
+    def to_dict(self):
+        template = self.get_template()
+        rarity_info = ITEM_RARITIES.get(self.rarity, {})
+        
+        return {
+            'id': self.id,
+            'item_template': self.item_template,
+            'name': template.get('name', self.item_template),
+            'type': template.get('type', 'unknown'),
+            'type_name': ITEM_TYPES.get(template.get('type', ''), 'Unknown'),
+            'rarity': self.rarity,
+            'rarity_name': rarity_info.get('name', self.rarity),
+            'rarity_color': rarity_info.get('color', '#9e9e9e'),
+            'stats': self.get_stats(),
+            'description': template.get('description', ''),
+            'equipped': self.equipped,
+            'acquired_at': self.acquired_at.isoformat(),
+        }

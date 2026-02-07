@@ -468,3 +468,68 @@ def get_available_units(race):
         return jsonify(units), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ==================== ITEM MANAGEMENT ====================
+
+@game_routes.route('/<int:game_id>/item/<int:item_id>/equip', methods=['POST'])
+def equip_item(game_id, item_id):
+    """Equip an item"""
+    try:
+        from models.db import Item
+        
+        game = SavedGame.query.get(game_id)
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        item = Item.query.filter_by(id=item_id, game_id=game_id).first()
+        if not item:
+            return jsonify({'error': 'Item not found'}), 404
+        
+        # Unequip any item in the same slot
+        item_slot = item.get_template()['slot']
+        for other_item in game.items:
+            if other_item.equipped and other_item.get_template()['slot'] == item_slot:
+                other_item.equipped = False
+        
+        # Equip the item
+        item.equipped = True
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{item.get_template()["name"]} equipped',
+            'item': item.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@game_routes.route('/<int:game_id>/item/<int:item_id>/unequip', methods=['POST'])
+def unequip_item(game_id, item_id):
+    """Unequip an item"""
+    try:
+        from models.db import Item
+        
+        game = SavedGame.query.get(game_id)
+        if not game:
+            return jsonify({'error': 'Game not found'}), 404
+        
+        item = Item.query.filter_by(id=item_id, game_id=game_id).first()
+        if not item:
+            return jsonify({'error': 'Item not found'}), 404
+        
+        item.equipped = False
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{item.get_template()["name"]} unequipped',
+            'item': item.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

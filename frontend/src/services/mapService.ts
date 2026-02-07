@@ -17,6 +17,14 @@ export interface ResourceBonuses {
   soul_energy?: number;
 }
 
+export interface EnemyData {
+  type: string;
+  name: string;
+  strength: number;
+  description: string;
+  power: number;
+}
+
 export interface MapTile {
   id: number;
   q: number;
@@ -30,6 +38,7 @@ export interface MapTile {
   description: string;
   occupied_by: string | null;
   explored: boolean;
+  enemy: EnemyData | null;
 }
 
 export interface WorldMapData {

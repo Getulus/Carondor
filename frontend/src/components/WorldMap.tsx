@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { MapTile, getWorldMap, axialToPixel, exploreTile } from '../services/mapService';
+import { MapTile, getWorldMap, axialToPixel } from '../services/mapService';
+import AttackModal from './AttackModal';
 import './WorldMap.css';
 
 interface WorldMapProps {
@@ -10,6 +11,7 @@ interface WorldMapProps {
 const WorldMap: React.FC<WorldMapProps> = ({ gameId, onTileClick }) => {
   const [tiles, setTiles] = useState<MapTile[]>([]);
   const [selectedTile, setSelectedTile] = useState<MapTile | null>(null);
+  const [showAttackModal, setShowAttackModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewOffset, setViewOffset] = useState({ x: 0, y: 0 });
@@ -99,9 +101,23 @@ const WorldMap: React.FC<WorldMapProps> = ({ gameId, onTileClick }) => {
     }
     ctx.closePath();
 
-    // Fill color based on terrain
-    ctx.fillStyle = tile.explored ? tile.color : '#333333';
-    ctx.fill();
+    // Fill color based on ownership and terrain
+    if (tile.occupied_by === 'player') {
+      // Player-owned tiles have a green tint
+      ctx.fillStyle = tile.color;
+      ctx.fill();
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.2)';
+      ctx.fill();
+    } else if (tile.occupied_by === 'neutral' && tile.enemy) {
+      // Neutral tiles with enemies have a red tint
+      ctx.fillStyle = tile.color;
+      ctx.fill();
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.2)';
+      ctx.fill();
+    } else {
+      ctx.fillStyle = tile.explored ? tile.color : '#333333';
+      ctx.fill();
+    }
 
     // Border
     if (selectedTile?.q === tile.q && selectedTile?.r === tile.r) {
@@ -110,7 +126,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ gameId, onTileClick }) => {
     } else if (tile.occupied_by === 'player') {
       ctx.strokeStyle = '#00FF00';
       ctx.lineWidth = 2;
-    } else if (tile.occupied_by === 'enemy') {
+    } else if (tile.occupied_by === 'neutral') {
       ctx.strokeStyle = '#FF0000';
       ctx.lineWidth = 2;
     } else {
@@ -125,6 +141,22 @@ const WorldMap: React.FC<WorldMapProps> = ({ gameId, onTileClick }) => {
       ctx.font = '10px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('+', x, y + 4);
+    }
+
+    // Draw enemy indicator on neutral tiles
+    if (tile.occupied_by === 'neutral' && tile.enemy) {
+      ctx.fillStyle = '#FF0000';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚔', x, y + 4);
+    }
+
+    // Draw player town indicator at center
+    if (tile.q === 0 && tile.r === 0 && tile.occupied_by === 'player') {
+      ctx.fillStyle = '#FFD700';
+      ctx.font = 'bold 14px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('🏰', x, y + 5);
     }
   };
 
@@ -159,29 +191,36 @@ const WorldMap: React.FC<WorldMapProps> = ({ gameId, onTileClick }) => {
     });
 
     if (closestTile !== null) {
-      const tileToExplore: MapTile = closestTile;
-      setSelectedTile(tileToExplore);
+      const tileToSelect: MapTile = closestTile;
+      setSelectedTile(tileToSelect);
       
-      // Auto-explore tile when clicked
-      if (!tileToExplore.explored) {
-        try {
-          await exploreTile(gameId, tileToExplore.q, tileToExplore.r);
-          // Refresh the tile
-          const updatedTiles = tiles.map(t => 
-            t.q === tileToExplore.q && t.r === tileToExplore.r 
-              ? { ...t, explored: true }
-              : t
-          );
-          setTiles(updatedTiles);
-        } catch (err) {
-          console.error('Failed to explore tile:', err);
-        }
-      }
+      // Don't auto-open modal, let user click the button in the info panel
       
       if (onTileClick) {
-        onTileClick(tileToExplore);
+        onTileClick(tileToSelect);
       }
     }
+  };
+
+  const isAdjacentToPlayer = (tile: MapTile): boolean => {
+    const directions = [
+      [1, 0], [1, -1], [0, -1],
+      [-1, 0], [-1, 1], [0, 1]
+    ];
+
+    for (const [dq, dr] of directions) {
+      const neighbor = tiles.find(t => t.q === tile.q + dq && t.r === tile.r + dr);
+      if (neighbor && neighbor.occupied_by === 'player') {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
+  const handleAttackSuccess = () => {
+    // Reload the map after successful attack
+    loadMap();
   };
 
   const handleMouseDown = (event: React.MouseEvent<HTMLCanvasElement>) => {
@@ -258,27 +297,73 @@ const WorldMap: React.FC<WorldMapProps> = ({ gameId, onTileClick }) => {
             )}
             {selectedTile.occupied_by && (
               <p className="occupation-status">
-                <strong>Controlled by:</strong> {selectedTile.occupied_by}
+                <strong>Status:</strong> {
+                  selectedTile.occupied_by === 'player' ? '✓ Your Territory' :
+                  selectedTile.occupied_by === 'neutral' ? '⚔ Neutral (Enemy)' :
+                  selectedTile.occupied_by
+                }
               </p>
             )}
-            {!selectedTile.explored && (
-              <p className="exploration-status">
-                <em>Click to explore this tile</em>
-              </p>
+            {selectedTile.enemy && (
+              <div className="enemy-preview">
+                <p><strong>Enemy:</strong> {selectedTile.enemy.name}</p>
+                <p><strong>Power:</strong> {selectedTile.enemy.power}</p>
+              </div>
+            )}
+            {selectedTile.occupied_by === 'player' && (
+              <button 
+                className="view-tile-button"
+                onClick={() => setShowAttackModal(true)}
+              >
+                🏰 View Territory
+              </button>
+            )}
+            {selectedTile.occupied_by === 'neutral' && (
+              <>
+                {isAdjacentToPlayer(selectedTile) ? (
+                  <button 
+                    className="attack-tile-button"
+                    onClick={() => setShowAttackModal(true)}
+                  >
+                    ⚔️ Attack This Tile
+                  </button>
+                ) : (
+                  <p className="warning-text">
+                    <em>Must be adjacent to your territory to attack</em>
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>
       )}
       
       <div className="map-controls">
-        <button onClick={() => setViewOffset({ x: 0, y: 0 })}>
-          Reset View
-        </button>
-        <button onClick={loadMap}>Refresh Map</button>
+        <div>
+          <button onClick={() => setViewOffset({ x: 0, y: 0 })}>
+            Reset View
+          </button>
+          <button onClick={loadMap}>Refresh Map</button>
+        </div>
         <p className="map-info">
-          Drag to pan • Click tiles to explore • {tiles.length} tiles total
+          Drag to pan • Click tiles to view • {tiles.length} tiles total
         </p>
+        <div className="map-legend">
+          <span className="legend-item"><span className="legend-color player"></span> Your Territory</span>
+          <span className="legend-item"><span className="legend-color enemy"></span> Enemy Territory</span>
+          <span className="legend-item">⚔ = Enemy</span>
+          <span className="legend-item">🏰 = Town</span>
+        </div>
       </div>
+
+      {showAttackModal && (
+        <AttackModal
+          tile={selectedTile}
+          gameId={gameId}
+          onClose={() => setShowAttackModal(false)}
+          onAttackSuccess={handleAttackSuccess}
+        />
+      )}
     </div>
   );
 };

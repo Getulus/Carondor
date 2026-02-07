@@ -95,6 +95,22 @@ export interface Unit {
   hired_at: string;
 }
 
+export interface Item {
+  id: number;
+  item_template: string;
+  rarity: string;
+  equipped: boolean;
+  stats: {
+    [key: string]: number;
+  };
+  template_data: {
+    name: string;
+    type: string;
+    slot: string;
+    description: string;
+  };
+}
+
 export interface SavedGame {
   id: number;
   hero_name: string;
@@ -102,11 +118,14 @@ export interface SavedGame {
   hero_race: string;
   level: number;
   experience: number;
+  xp_needed?: number;
+  xp_progress?: number;
   created_at: string;
   updated_at: string;
   resources: Resources;
   buildings: Building[];
   units: Unit[];
+  items: Item[];
 }
 
 export interface SaveGameRequest {

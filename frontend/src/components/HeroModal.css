@@ -26,7 +26,7 @@
   background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
   border: 3px solid #d4af37;
   border-radius: 16px;
-  max-width: 900px;
+  max-width: 1400px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
@@ -97,7 +97,21 @@
 .hero-modal-body {
   padding: 30px;
   display: grid;
+  grid-template-columns: 400px 1fr;
   gap: 30px;
+}
+
+.hero-left-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.hero-right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 600px;
 }
 
 .hero-modal-portrait {
@@ -181,10 +195,275 @@
 
   .hero-modal-body {
     padding: 20px;
+    grid-template-columns: 1fr;
   }
 
   .hero-stat-grid,
   .hero-info-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Hero Inventory Container */
+.hero-inventory-container {
+  display: contents;
+}
+
+.hero-equipment-section h3,
+.hero-inventory-section h3 {
+  color: #d4af37;
+  margin-top: 0;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+}
+
+.hero-equipment-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.hero-equipment-slot {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.hero-slot-label {
+  font-size: 0.75rem;
+  color: #888;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+.hero-empty-slot {
+  padding: 20px;
+  text-align: center;
+  color: #555;
+  font-style: italic;
+  border: 2px dashed #333;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.hero-inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.hero-item-card {
+  background: rgba(20, 20, 30, 0.9);
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid;
+  position: relative;
+}
+
+.hero-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.hero-item-card.rarity-common {
+  border-color: #9e9e9e;
+}
+
+.hero-item-card.rarity-uncommon {
+  border-color: #4caf50;
+}
+
+.hero-item-card.rarity-rare {
+  border-color: #2196f3;
+}
+
+.hero-item-card.rarity-epic {
+  border-color: #9c27b0;
+}
+
+.hero-item-card.rarity-legendary {
+  border-color: #ff9800;
+  box-shadow: 0 0 15px rgba(255, 152, 0, 0.3);
+}
+
+.hero-item-name {
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.hero-item-type {
+  font-size: 0.75rem;
+  color: #b0b0b0;
+  margin-bottom: 6px;
+}
+
+.hero-item-rarity {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.rarity-common .hero-item-rarity {
+  color: #9e9e9e;
+}
+
+.rarity-uncommon .hero-item-rarity {
+  color: #4caf50;
+}
+
+.rarity-rare .hero-item-rarity {
+  color: #2196f3;
+}
+
+.rarity-epic .hero-item-rarity {
+  color: #9c27b0;
+}
+
+.rarity-legendary .hero-item-rarity {
+  color: #ff9800;
+}
+
+.hero-equip-btn,
+.hero-unequip-btn {
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.8rem;
+}
+
+.hero-equip-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.hero-equip-btn:hover {
+  background: #45a049;
+  transform: scale(1.05);
+}
+
+.hero-unequip-btn {
+  background: #e94560;
+  color: white;
+}
+
+.hero-unequip-btn:hover {
+  background: #d63851;
+  transform: scale(1.05);
+}
+
+.hero-empty-inventory {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+.hero-item-details {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.hero-item-details h3 {
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.hero-detail-rarity {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-detail-rarity.rarity-common { color: #9e9e9e; }
+.hero-detail-rarity.rarity-uncommon { color: #4caf50; }
+.hero-detail-rarity.rarity-rare { color: #2196f3; }
+.hero-detail-rarity.rarity-epic { color: #9c27b0; }
+.hero-detail-rarity.rarity-legendary { color: #ff9800; }
+
+.hero-detail-type {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+.hero-detail-stats {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.hero-detail-stats h4 {
+  color: #d4af37;
+  margin: 0 0 10px 0;
+  font-size: 0.95rem;
+}
+
+.hero-stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+  font-size: 0.9rem;
+}
+
+.hero-stat-name {
+  color: #b0b0b0;
+  text-transform: capitalize;
+}
+
+.hero-stat-value {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.hero-detail-description {
+  font-size: 0.85rem;
+  color: #888;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+@media (max-width: 1024px) {
+  .hero-modal-body {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-item-details {
+    max-height: none;
+  }
+
+  .hero-equipment-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-equipment-slots {
+    grid-template-columns: 1fr;
   }
 }

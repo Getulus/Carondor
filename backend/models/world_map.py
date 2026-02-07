@@ -257,6 +257,81 @@ TERRAIN_TRAITS = {
     }
 }
 
+# ==================== ENEMY TYPES ====================
+
+ENEMY_TYPES = {
+    'goblins': {
+        'name': 'Goblin Camp',
+        'description': 'A group of hostile goblins',
+        'base_power': 10,
+        'power_per_level': 5,
+        'loot_multiplier': 1.0
+    },
+    'bandits': {
+        'name': 'Bandit Hideout',
+        'description': 'Dangerous bandits control this area',
+        'base_power': 15,
+        'power_per_level': 7,
+        'loot_multiplier': 1.2
+    },
+    'wolves': {
+        'name': 'Wolf Pack',
+        'description': 'Wild wolves roam this territory',
+        'base_power': 12,
+        'power_per_level': 6,
+        'loot_multiplier': 0.8
+    },
+    'orcs': {
+        'name': 'Orc Warband',
+        'description': 'Fierce orc warriors',
+        'base_power': 25,
+        'power_per_level': 10,
+        'loot_multiplier': 1.5
+    },
+    'undead': {
+        'name': 'Undead Legion',
+        'description': 'Cursed undead creatures',
+        'base_power': 20,
+        'power_per_level': 8,
+        'loot_multiplier': 1.3
+    },
+    'trolls': {
+        'name': 'Troll Den',
+        'description': 'Massive trolls defend this area',
+        'base_power': 30,
+        'power_per_level': 12,
+        'loot_multiplier': 1.6
+    },
+    'dragons': {
+        'name': 'Dragon Lair',
+        'description': 'A powerful dragon guards this land',
+        'base_power': 50,
+        'power_per_level': 20,
+        'loot_multiplier': 3.0
+    },
+    'elementals': {
+        'name': 'Elemental Guardians',
+        'description': 'Ancient elemental spirits',
+        'base_power': 35,
+        'power_per_level': 15,
+        'loot_multiplier': 2.0
+    },
+    'demons': {
+        'name': 'Demon Portal',
+        'description': 'Demonic entities from another realm',
+        'base_power': 40,
+        'power_per_level': 18,
+        'loot_multiplier': 2.5
+    },
+    'giants': {
+        'name': 'Giant Camp',
+        'description': 'Towering giants block your path',
+        'base_power': 45,
+        'power_per_level': 17,
+        'loot_multiplier': 2.2
+    },
+}
+
 # Trait distribution weights (higher = more common)
 TERRAIN_WEIGHTS = {
     'plains': 20,
